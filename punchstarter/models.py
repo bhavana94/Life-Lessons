@@ -37,10 +37,12 @@ class Project(db.Model):
 	time_created = db.Column(db.DateTime)
 	pledges = db.relationship('Pledge', backref='project',
 		foreign_keys='Pledge.project_id')
+
 #For counting and storing no. of pledges
 @property
 def num_pledges(self):
 	return len(self.pledges)
+	
 #For adding total pledges
 @property
 def total_pledges(self):
