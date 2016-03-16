@@ -20,17 +20,22 @@ from models import *
 
 @app.route("/")
 def hello():
-	projects = db.session.query(Project).order_by(Project.time_created.desc()).limit(15)
+#Sorting projects by date created desc
+	projects = db.session.query(Project).order_by(Project.time_created.desc()
+		).limit(15)
 	return render_template("index.html", projects=projects)
 
 @app.route("/projects/create",methods=['GET','POST'])
 def create():
+#Creating a new project
 	if request.method == "GET":
 	    return render_template("create.html")
 	if request.method == "POST":
+#Handle The Form Submission
  		now = datetime.datetime.now()
     	time_end = request.form.get("funding_end_date")
     	time_end = datetime.datetime.strptime(time_end, "%Y-%m-%d")
+#Upload The Cover Photo
     	cover_photo = request.files['cover_photo']
     	uploaded_image = cloudinary.uploader.upload(
     		cover_photo,
@@ -54,6 +59,7 @@ def create():
 
 @app.route("/projects/<int:project_id>/")
 def project_detail(project_id):
+#Displaying all projects details
 	project = db.session.query(Project).get(project_id)
 	if project is None:
 		abort(404)
@@ -62,6 +68,7 @@ def project_detail(project_id):
 
 @app.route("/projects/<int:project_id>/pledge/", methods=['GET', 'POST'])
 def pledge(project_id):
+#How pledge works is handled here
 	if request.method == "GET":
 		project = db.session.query(Project).get(project_id)
 		if project is None:
@@ -81,12 +88,13 @@ def pledge(project_id):
 
 @app.route('/search/')
 def search():
+#Search For Projects Is Handled Here
 	query = request.args.get("q") or ""
 	projects = db.session.query(Project).filter(
-
 		Project.name.ilike('% ' + query + '%') |
 		Project.long_description.ilike('% ' + query + '%') |
 		Project.short_description.ilike('% ' + query + '%')
+
 		).all()
 	project_count = len(projects)
 	return render_template('search.html',

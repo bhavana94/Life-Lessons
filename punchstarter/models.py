@@ -6,14 +6,15 @@ import cloudinary.utils
 
 include_schemas = True
 
-
+#Member Table
 class Member(db.Model):
 	__tablename__ = 'Members'
 	id = db.Column(db.Integer, primary_key=True)
 	first_name = db.Column(db.String(100))
 	last_name = db.Column(db.String(100))
 	project = db.relationship('Project', backref='creator')
-	pledges = db.relationship('Pledge', backref='pledge', foreign_keys='Pledge.member_id')
+	pledges = db.relationship('Pledge', backref='pledge', 
+		foreign_keys='Pledge.member_id')
 
 	def __init__(self, first_name, last_name, project, pledges):
 		self.first_name = first_name
@@ -21,7 +22,7 @@ class Member(db.Model):
 		self.project = project
 		self.pledges = pledges
 
-
+#Project Table
 class Project(db.Model):
 	__tablename__ = 'Projects'
 	id = db.Column(db.Integer, primary_key=True)
@@ -34,12 +35,13 @@ class Project(db.Model):
 	time_start = db.Column(db.DateTime)
 	time_end = db.Column(db.DateTime)
 	time_created = db.Column(db.DateTime)
-	pledges = db.relationship('Pledge', backref='project', foreign_keys='Pledge.project_id')
-
+	pledges = db.relationship('Pledge', backref='project',
+		foreign_keys='Pledge.project_id')
+#For counting and storing no. of pledges
 @property
 def num_pledges(self):
 	return len(self.pledges)
-
+#For adding total pledges
 @property
 def total_pledges(self):
 	total_pledges = db.session.query(func.sum(Pledge.amount)).filter(Pledge.project_id==self.id).one()[0]
@@ -47,30 +49,32 @@ def total_pledges(self):
 	    total_pledges = 0
 	    return total_pledges
 
-
-"""@property
+#For calculating the percentage amount of projects funded
+@property
 def percentage_funded(self):
-	return int(self.total_pledges *100 / self.goal_amount)"""
+	return int(self.total_pledges * 100 / self.goal_amount)
 	
 
 
-
+#For calculating the total no. of days left 
 @property
 def num_days_left(self):
 	now = datetime.datetime.now()
 	num_days_left = (self.time_end - now).days
 	return num_days_left
 
+#For fetching the image from the database
 @property
 def image_path(self):
 	return cloudinary.utils.cloudinary_url(self.image_filename)[0]
 
 
-
+#Pledge Table
 class Pledge(db.Model):
 	__tablename__ = 'Pledgess'
 	id = db.Column(db.Integer, primary_key=True)
 	amount = db.Column(db.Integer)
 	time_created = db.Column(db.DateTime)
-	project_id = db.Column(db.Integer, db.ForeignKey('Projects.id'), nullable=False)
-	member_id = db.Column(db.Integer, db.ForeignKey('Members.id'), nullable=False)	
+	project_id = db.Column(db.Integer, db.ForeignKey('Projects.id'),
+		nullable=False)
+	member_id = db.Column(db.Integer, db.ForeignKey('Members.id'), nullable=False)
